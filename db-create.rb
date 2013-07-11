@@ -5,6 +5,7 @@ require 'fileutils'
 
 class Saver
   def initialize(dir = './src')
+    @locations = []
     @dir = File.realpath(dir)
     @file = File.join(@dir, 'belfiore.erl')
     FileUtils.touch(@file)
@@ -19,8 +20,13 @@ class Saver
   def save(code, city, province = nil)
     return if code !~ /^[a-z]\d{3}$/i or city.empty?
     province ||= 'EE'
+    city = (city.upcase rescue city).to_s
+    province = (province.upcase rescue province).to_s
 
-    @fp.puts "get(\"#{city.upcase rescue city}\", \"#{province.upcase rescue province}\") -> \"#{code.upcase rescue code}\";"
+    unless @locations.include?([city, province])
+      @locations << [city, province]
+      @fp.puts "get(\"#{city}\", \"#{province}\") -> \"#{code.upcase rescue code}\";"
+    end
   end
 
   def close
